@@ -134,8 +134,11 @@ Mc  Machine Core — process supervisor, always running
     │       Streams PTY output to Hk, receives keystrokes back
     │
     ├── Mf  Machine Files
-    │       Exposes SFTP over the existing SSH connection
-    │       AI access off by default
+    │       SSHFS mountpoint — a folder on the Host mounted onto the Deck
+    │       Appears as a local folder to the AI — no explicit transfer needed
+    │       AI can read, write, and create files here like any local directory
+    │       Backed by a fixed-size disk image on the laptop — configurable by the user
+    │       Full is full — no risk of filling the laptop's disk unexpectedly
     │
     └── Ms  Machine Screenshare
             Runs a VNC server (TigerVNC or x11vnc)
@@ -171,9 +174,10 @@ Hc  Host Core — central coordinator
     │       Human-only by default
     │
     ├── Hf  Host Files
-    │       SFTP client connecting to Mf
-    │       File browser panel in Fd
-    │       Human-only by default
+    │       Owns the shared disk image — configurable size, created on first setup
+    │       Mounts it onto the Deck via SSHFS over the existing SSH connection
+    │       File browser panel in Fd for the human to manage shared files
+    │       Human manages the folder from the laptop; AI accesses it from the Deck
     │
     ├── Hs  Host Screenshare
     │       Runs websockify — protocol bridge only
@@ -232,7 +236,7 @@ Fs  Frontend Screenshare
 | Write | Hw | Mw | ZMQ Push/Pull | Unidirectional |
 | Control | Mc | Hc | ZMQ Req/Reply | Bidirectional |
 | Screenshare | Ms | Hs | TCP (VNC) | Unidirectional |
-| Files | Mf | Hf | SFTP over SSH | Bidirectional |
+| Files | Hf | Mf | SSHFS over SSH | Bidirectional |
 | Console | Mk | Hk | ZMQ Push/Pull | Bidirectional |
 
 ### Host ↔ Frontend (over localhost)
@@ -381,9 +385,11 @@ OpenCode (SST) — study for agent loop and tool dispatch architecture. Webfetch
 - Human-only by default
 
 ### Phase 8 — File transfer — Mf and Hf
-- Expose Mf via SFTP over SSH
-- Implement Hf as SFTP client in Fd
-- Human-only by default
+- Create configurable shared disk image on the laptop (user sets size on first setup)
+- Mount it onto the Deck via SSHFS over the existing SSH connection
+- Verify AI can read and write to the mountpoint as a local folder
+- Implement Hf file browser panel in Fd for human-side file management
+- Test large file behavior — confirm size cap holds
 
 ### Phase 9 — Frontend basics — Fc and Fd
 - Implement Fc as web server on local port
